@@ -223,6 +223,7 @@ body {
   gap: var(--space-4);
   padding: var(--space-4) 0;
   min-height: 0;
+  align-content: start;
 }
 
 /* Status Column */
@@ -230,7 +231,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  min-height: 0;
 }
 
 /* Status Hero */
@@ -280,7 +280,7 @@ body {
   color: var(--text-muted);
 }
 
-/* Service List */
+/* Service List - NO flex: 1 to prevent expansion */
 .service-list {
   display: flex;
   flex-direction: column;
@@ -288,7 +288,6 @@ body {
   background: var(--border-color);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  flex: 1;
 }
 
 .service-row {
@@ -456,7 +455,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  min-height: 0;
 }
 
 .section-title {
@@ -512,7 +510,7 @@ body {
   padding: var(--space-3);
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  min-height: 200px;
 }
 
 .response-graph {
