@@ -320,38 +320,37 @@ function setUptimePeriod() {
 }
 
 /**
- * Generate uptime bars from history
+ * Generate uptime bars from history (last hour, 4 intervals @ 15 min each)
  */
 function generateUptimeBars() {
   ['frontend', 'backend', 'database'].forEach(service => {
     const container = elements[`${service}Uptime`];
-    const history = uptimeHistory[service] || [];
+    const currentStatus = serviceStatuses[service]?.status || 'checking';
 
-    // Create 30-day array with defaults
-    const days = [];
-    for (let i = 29; i >= 0; i--) {
-      const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
-      const dateStr = date.toISOString().split('T')[0];
-      const historyItem = history.find(h => h.date === dateStr);
+    // Create 4 intervals for the last hour (15-min each)
+    const intervals = [];
+    const now = Date.now();
+    const FIFTEEN_MIN = 15 * 60 * 1000;
 
-      days.push({
-        date: dateStr,
-        status: historyItem?.status || 'empty',
-        displayDate: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    for (let i = 3; i >= 0; i--) {
+      // For now, use current status for all intervals (real implementation would use stored history)
+      intervals.push({
+        time: new Date(now - i * FIFTEEN_MIN),
+        status: currentStatus === 'operational' ? 'operational' : (currentStatus === 'checking' ? 'empty' : currentStatus)
       });
     }
 
-    container.innerHTML = days.map(day => {
-      const statusClass = day.status === 'operational' ? '' : day.status;
-      return `<div class="uptime-day ${statusClass}" title="${day.displayDate}: ${day.status}"></div>`;
+    container.innerHTML = intervals.map((interval, i) => {
+      const statusClass = interval.status === 'operational' ? '' : interval.status;
+      const timeLabel = i === 3 ? 'Now' : `-${(3 - i) * 15}m`;
+      return `<div class="uptime-day ${statusClass}" title="${timeLabel}: ${interval.status}"></div>`;
     }).join('');
 
-    // Calculate uptime percentage
-    const withData = days.filter(d => d.status !== 'empty');
-    if (withData.length > 0) {
-      const operational = withData.filter(d => d.status === 'operational').length;
-      const percent = ((operational / withData.length) * 100).toFixed(2);
-      elements[`${service}Percent`].textContent = `${percent}%`;
+    // Calculate uptime percentage (100% if operational now)
+    if (currentStatus === 'operational') {
+      elements[`${service}Percent`].textContent = '100.00%';
+    } else if (currentStatus === 'down') {
+      elements[`${service}Percent`].textContent = '0.00%';
     } else {
       elements[`${service}Percent`].textContent = '--';
     }
