@@ -1,0 +1,91 @@
+name: Status Check Cron
+
+on:
+  schedule:
+    # Run every 5 minutes
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  check-services:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check Services & Record Status
+        run: |
+          echo "🔍 Checking services..."
+          
+          # Check Frontend
+          FRONTEND_START=$(date +%s%3N)
+          FRONTEND_STATUS="down"
+          if curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://rentverse-frontend-nine.vercel.app" | grep -q "200\|301\|302"; then
+            FRONTEND_STATUS="operational"
+          fi
+          FRONTEND_END=$(date +%s%3N)
+          FRONTEND_TIME=$((FRONTEND_END - FRONTEND_START))
+          echo "Frontend: $FRONTEND_STATUS (${FRONTEND_TIME}ms)"
+          
+          # Check Backend Health
+          BACKEND_START=$(date +%s%3N)
+          BACKEND_STATUS="down"
+          DATABASE_STATUS="down"
+          
+          HEALTH_RESPONSE=$(curl -s --max-time 10 "https://rentverse-backend.onrender.com/health" || echo '{}')
+          echo "Health response: $HEALTH_RESPONSE"
+          
+          if echo "$HEALTH_RESPONSE" | jq -e '.status == "OK"' > /dev/null 2>&1; then
+            BACKEND_STATUS="operational"
+          fi
+          
+          if echo "$HEALTH_RESPONSE" | jq -e '.database == "Connected"' > /dev/null 2>&1; then
+            DATABASE_STATUS="operational"
+          fi
+          
+          BACKEND_END=$(date +%s%3N)
+          BACKEND_TIME=$((BACKEND_END - BACKEND_START))
+          echo "Backend: $BACKEND_STATUS (${BACKEND_TIME}ms)"
+          echo "Database: $DATABASE_STATUS"
+          
+          # Get current timestamp
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          
+          # Build JSON payload
+          PAYLOAD=$(cat <<EOF
+          {
+            "timestamp": "$TIMESTAMP",
+            "checks": {
+              "frontend": {
+                "status": "$FRONTEND_STATUS",
+                "responseTime": $FRONTEND_TIME
+              },
+              "backend": {
+                "status": "$BACKEND_STATUS",
+                "responseTime": $BACKEND_TIME
+              },
+              "database": {
+                "status": "$DATABASE_STATUS",
+                "responseTime": $BACKEND_TIME
+              }
+            }
+          }
+          EOF
+          )
+          
+          echo "📤 Sending to API..."
+          echo "$PAYLOAD" | jq .
+          
+          # Send to Cloudflare Pages Function
+          RESPONSE=$(curl -s -X POST \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -d "$PAYLOAD" \
+            "https://rentverse-clarity-status.pages.dev/api/status")
+          
+          echo "📥 API Response: $RESPONSE"
+          
+          if echo "$RESPONSE" | jq -e '.success == true' > /dev/null 2>&1; then
+            echo "✅ Status recorded successfully!"
+          else
+            echo "❌ Failed to record status"
+            exit 1
+          fi

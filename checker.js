@@ -1,24 +1,26 @@
 /**
  * Rentverse Status Checker
- * Minimalistic Professional Design
+ * Fetches real uptime data from Cloudflare KV via API
  */
 
-// Service endpoints
+// API endpoint
+const API_URL = 'https://rentverse-clarity-status.pages.dev/api/status';
+
+// Fallback for local development
+const IS_LOCAL = window.location.protocol === 'file:';
+
+// Service endpoints (for real-time checks)
 const SERVICES = {
   frontend: {
     name: 'Frontend',
     url: 'https://rentverse-frontend-nine.vercel.app',
-    method: 'HEAD'
   },
   backend: {
     name: 'Backend API',
     url: 'https://rentverse-backend.onrender.com/health',
-    method: 'GET'
   },
   database: {
     name: 'Database',
-    url: null,
-    method: null
   }
 };
 
@@ -32,11 +34,11 @@ let serviceStatuses = {
   database: { status: 'checking', responseTime: null }
 };
 
-// Uptime history (simulated for now - will be real with backend storage)
+// Uptime history
 let uptimeHistory = {
-  frontend: generateUptimeData(),
-  backend: generateUptimeData(),
-  database: generateUptimeData()
+  frontend: [],
+  backend: [],
+  database: []
 };
 
 // DOM Elements
@@ -46,26 +48,17 @@ const elements = {};
  * Initialize the status checker
  */
 function init() {
-  // Cache DOM elements
   cacheElements();
-
-  // Load saved theme
   loadTheme();
-
-  // Set up uptime period display
   setUptimePeriod();
 
-  // Generate uptime bars
-  generateUptimeBars();
-
-  // Set up event listeners
   elements.refreshBtn.addEventListener('click', refreshAll);
   elements.themeToggle.addEventListener('click', toggleTheme);
 
-  // Initial check
+  // Initial load
   refreshAll();
 
-  // Set up auto-refresh
+  // Auto-refresh
   setInterval(refreshAll, REFRESH_INTERVAL);
 }
 
@@ -80,7 +73,6 @@ function cacheElements() {
   elements.refreshBtn = document.getElementById('refreshBtn');
   elements.themeToggle = document.getElementById('themeToggle');
 
-  // Service elements
   ['frontend', 'backend', 'database'].forEach(service => {
     elements[`${service}Badge`] = document.getElementById(`${service}Badge`);
     elements[`${service}Time`] = document.getElementById(`${service}Time`);
@@ -90,71 +82,79 @@ function cacheElements() {
 }
 
 /**
- * Generate mock uptime data for 30 days
- */
-function generateUptimeData() {
-  const days = [];
-  for (let i = 29; i >= 0; i--) {
-    const random = Math.random();
-    let status = 'operational';
-    if (random < 0.02) status = 'down';
-    else if (random < 0.05) status = 'partial';
-    days.push({ status, date: new Date(Date.now() - i * 24 * 60 * 60 * 1000) });
-  }
-  return days;
-}
-
-/**
- * Generate uptime bars UI
- */
-function generateUptimeBars() {
-  ['frontend', 'backend', 'database'].forEach(service => {
-    const container = elements[`${service}Uptime`];
-    const data = uptimeHistory[service];
-
-    container.innerHTML = data.map((day, index) => {
-      const date = day.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      const statusClass = day.status === 'operational' ? '' : day.status;
-      return `<div class="uptime-day ${statusClass}" title="${date}: ${day.status}"></div>`;
-    }).join('');
-
-    // Calculate uptime percentage
-    const operational = data.filter(d => d.status === 'operational').length;
-    const percent = ((operational / data.length) * 100).toFixed(2);
-    elements[`${service}Percent`].textContent = `${percent}%`;
-  });
-}
-
-/**
- * Set uptime period display
- */
-function setUptimePeriod() {
-  const endDate = new Date();
-  const startDate = new Date(Date.now() - 29 * 24 * 60 * 60 * 1000);
-
-  const format = (date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  document.getElementById('uptimePeriod').textContent = `${format(startDate)} - ${format(endDate)}`;
-}
-
-/**
- * Check all services
+ * Refresh all data
  */
 async function refreshAll() {
   elements.refreshBtn.classList.add('spinning');
 
-  await Promise.all([
-    checkFrontend(),
-    checkBackend()
-  ]);
+  // Try to fetch from API first
+  const apiData = await fetchStatusFromAPI();
+
+  if (apiData && apiData.latest) {
+    // Use API data
+    updateFromAPIData(apiData);
+  } else {
+    // Fallback to real-time checks
+    await Promise.all([checkFrontend(), checkBackend()]);
+  }
 
   updateOverallStatus();
   updateLastChecked();
+  generateUptimeBars();
 
   elements.refreshBtn.classList.remove('spinning');
 }
 
 /**
- * Check Frontend (Vercel)
+ * Fetch status from Cloudflare KV API
+ */
+async function fetchStatusFromAPI() {
+  if (IS_LOCAL) {
+    console.log('Running locally, using mock data');
+    return null;
+  }
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' }
+    });
+
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.error('Failed to fetch from API:', error);
+  }
+
+  return null;
+}
+
+/**
+ * Update UI from API data
+ */
+function updateFromAPIData(data) {
+  const { history, latest } = data;
+
+  // Update history
+  uptimeHistory = history;
+
+  // Update current statuses
+  if (latest) {
+    ['frontend', 'backend', 'database'].forEach(service => {
+      if (latest[service]) {
+        serviceStatuses[service] = {
+          status: latest[service].status || 'unknown',
+          responseTime: latest[service].responseTime || null
+        };
+        updateServiceUI(service);
+      }
+    });
+  }
+}
+
+/**
+ * Check Frontend (fallback)
  */
 async function checkFrontend() {
   const startTime = performance.now();
@@ -166,25 +166,19 @@ async function checkFrontend() {
       cache: 'no-store'
     });
 
-    const responseTime = Math.round(performance.now() - startTime);
-
     serviceStatuses.frontend = {
       status: 'operational',
-      responseTime
+      responseTime: Math.round(performance.now() - startTime)
     };
   } catch (error) {
-    console.error('Frontend check failed:', error);
-    serviceStatuses.frontend = {
-      status: 'down',
-      responseTime: null
-    };
+    serviceStatuses.frontend = { status: 'down', responseTime: null };
   }
 
   updateServiceUI('frontend');
 }
 
 /**
- * Check Backend (Render) - Also retrieves database status
+ * Check Backend (fallback)
  */
 async function checkBackend() {
   const startTime = performance.now();
@@ -203,8 +197,7 @@ async function checkBackend() {
 
       serviceStatuses.backend = {
         status: data.status === 'OK' ? 'operational' : 'degraded',
-        responseTime,
-        uptime: data.uptime
+        responseTime
       };
 
       serviceStatuses.database = {
@@ -215,8 +208,6 @@ async function checkBackend() {
       throw new Error(`HTTP ${response.status}`);
     }
   } catch (error) {
-    console.error('Backend check failed:', error);
-
     serviceStatuses.backend = { status: 'down', responseTime: null };
     serviceStatuses.database = { status: 'down', responseTime: null };
   }
@@ -233,11 +224,8 @@ function updateServiceUI(service) {
   const badge = elements[`${service}Badge`];
   const time = elements[`${service}Time`];
 
-  // Update badge
   badge.className = `status-badge ${status.status}`;
   badge.textContent = getStatusLabel(status.status);
-
-  // Update response time
   time.textContent = status.responseTime !== null ? `${status.responseTime}ms` : '--';
 }
 
@@ -248,8 +236,10 @@ function getStatusLabel(status) {
   const labels = {
     operational: 'Operational',
     degraded: 'Degraded',
+    partial: 'Partial',
     down: 'Down',
-    checking: 'Checking'
+    checking: 'Checking',
+    unknown: 'Unknown'
   };
   return labels[status] || 'Unknown';
 }
@@ -269,11 +259,11 @@ function updateOverallStatus() {
     const downCount = statuses.filter(s => s === 'down').length;
     title = 'Service disruption';
     subtitle = `${downCount} service${downCount > 1 ? 's' : ''} experiencing issues`;
-  } else if (statuses.includes('degraded')) {
+  } else if (statuses.includes('degraded') || statuses.includes('partial')) {
     overallStatus = 'degraded';
     title = 'Degraded performance';
     subtitle = 'Some services are running slowly';
-  } else if (statuses.includes('checking')) {
+  } else if (statuses.includes('checking') || statuses.includes('unknown')) {
     title = 'Checking systems...';
     subtitle = 'Fetching latest status';
   }
@@ -301,6 +291,56 @@ function updateLastChecked() {
   });
 
   elements.lastChecked.textContent = `${date}, ${time}`;
+}
+
+/**
+ * Set uptime period display
+ */
+function setUptimePeriod() {
+  const endDate = new Date();
+  const startDate = new Date(Date.now() - 29 * 24 * 60 * 60 * 1000);
+
+  const format = (date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  document.getElementById('uptimePeriod').textContent = `${format(startDate)} - ${format(endDate)}`;
+}
+
+/**
+ * Generate uptime bars from history
+ */
+function generateUptimeBars() {
+  ['frontend', 'backend', 'database'].forEach(service => {
+    const container = elements[`${service}Uptime`];
+    const history = uptimeHistory[service] || [];
+
+    // Create 30-day array with defaults
+    const days = [];
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+      const dateStr = date.toISOString().split('T')[0];
+      const historyItem = history.find(h => h.date === dateStr);
+
+      days.push({
+        date: dateStr,
+        status: historyItem?.status || 'empty',
+        displayDate: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      });
+    }
+
+    container.innerHTML = days.map(day => {
+      const statusClass = day.status === 'operational' ? '' : day.status;
+      return `<div class="uptime-day ${statusClass}" title="${day.displayDate}: ${day.status}"></div>`;
+    }).join('');
+
+    // Calculate uptime percentage
+    const withData = days.filter(d => d.status !== 'empty');
+    if (withData.length > 0) {
+      const operational = withData.filter(d => d.status === 'operational').length;
+      const percent = ((operational / withData.length) * 100).toFixed(2);
+      elements[`${service}Percent`].textContent = `${percent}%`;
+    } else {
+      elements[`${service}Percent`].textContent = '--';
+    }
+  });
 }
 
 /**
