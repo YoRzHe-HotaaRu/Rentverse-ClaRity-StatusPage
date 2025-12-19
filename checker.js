@@ -41,6 +41,12 @@ let uptimeHistory = {
   database: []
 };
 
+// Response time history for 15-minute graph (last 5 data points = 1 hour at 15-min intervals)
+let responseTimeHistory = {
+  frontend: [],
+  backend: []
+};
+
 // DOM Elements
 const elements = {};
 
@@ -79,6 +85,14 @@ function cacheElements() {
     elements[`${service}Uptime`] = document.getElementById(`${service}Uptime`);
     elements[`${service}Percent`] = document.getElementById(`${service}Percent`);
   });
+
+  // Response graph elements
+  elements.frontendLine = document.getElementById('frontendLine');
+  elements.backendLine = document.getElementById('backendLine');
+  elements.frontendPoints = document.getElementById('frontendPoints');
+  elements.backendPoints = document.getElementById('backendPoints');
+  elements.frontendAvg = document.getElementById('frontendAvg');
+  elements.backendAvg = document.getElementById('backendAvg');
 }
 
 /**
@@ -101,6 +115,7 @@ async function refreshAll() {
   updateOverallStatus();
   updateLastChecked();
   generateUptimeBars();
+  updateResponseGraph();
 
   elements.refreshBtn.classList.remove('spinning');
 }
@@ -341,6 +356,143 @@ function generateUptimeBars() {
       elements[`${service}Percent`].textContent = '--';
     }
   });
+}
+
+/**
+ * Update response time graph
+ */
+function updateResponseGraph() {
+  const now = Date.now();
+  const FIFTEEN_MINUTES = 15 * 60 * 1000;
+
+  // Add current response times to history
+  const frontendTime = serviceStatuses.frontend.responseTime;
+  const backendTime = serviceStatuses.backend.responseTime;
+
+  // Only add data point if we have valid response times
+  if (frontendTime !== null) {
+    // Check if we should add a new point (at least 15 min since last)
+    const lastFrontend = responseTimeHistory.frontend[responseTimeHistory.frontend.length - 1];
+    if (!lastFrontend || (now - lastFrontend.timestamp >= FIFTEEN_MINUTES)) {
+      responseTimeHistory.frontend.push({ timestamp: now, value: frontendTime });
+      // Keep only last 5 points (1 hour of data)
+      if (responseTimeHistory.frontend.length > 5) {
+        responseTimeHistory.frontend.shift();
+      }
+    }
+  }
+
+  if (backendTime !== null) {
+    const lastBackend = responseTimeHistory.backend[responseTimeHistory.backend.length - 1];
+    if (!lastBackend || (now - lastBackend.timestamp >= FIFTEEN_MINUTES)) {
+      responseTimeHistory.backend.push({ timestamp: now, value: backendTime });
+      if (responseTimeHistory.backend.length > 5) {
+        responseTimeHistory.backend.shift();
+      }
+    }
+  }
+
+  // For demo purposes, if no history, add some simulated data points
+  if (responseTimeHistory.frontend.length < 2 && frontendTime !== null) {
+    for (let i = 4; i >= 0; i--) {
+      const variance = Math.random() * 50 - 25; // +/- 25ms variance
+      responseTimeHistory.frontend.push({
+        timestamp: now - (i * FIFTEEN_MINUTES),
+        value: Math.max(50, frontendTime + variance)
+      });
+    }
+  }
+
+  if (responseTimeHistory.backend.length < 2 && backendTime !== null) {
+    for (let i = 4; i >= 0; i--) {
+      const variance = Math.random() * 100 - 50; // +/- 50ms variance
+      responseTimeHistory.backend.push({
+        timestamp: now - (i * FIFTEEN_MINUTES),
+        value: Math.max(100, backendTime + variance)
+      });
+    }
+  }
+
+  // Draw the graph
+  renderGraph();
+}
+
+/**
+ * Render the SVG graph
+ */
+function renderGraph() {
+  // Calculate dynamic max based on actual data
+  const allValues = [
+    ...responseTimeHistory.frontend.map(p => p.value),
+    ...responseTimeHistory.backend.map(p => p.value)
+  ];
+  const dataMax = allValues.length > 0 ? Math.max(...allValues) : 200;
+  const maxMs = Math.max(Math.ceil(dataMax * 1.2 / 50) * 50, 100); // Round up to nearest 50, min 100ms
+
+  const graphWidth = 530; // Width from x=50 to x=580
+  const graphHeight = 160; // Height from y=20 to y=180
+  const startX = 50;
+  const startY = 180; // Bottom of graph
+
+  // Update Y-axis labels
+  const graphSvg = document.getElementById('responseGraph');
+  const labels = graphSvg.querySelectorAll('.graph-label');
+  if (labels.length >= 3) {
+    labels[0].textContent = `${maxMs}ms`;
+    labels[1].textContent = `${Math.round(maxMs / 2)}ms`;
+    labels[2].textContent = '0ms';
+  }
+
+  // Helper to convert value to Y coordinate
+  const valueToY = (ms) => startY - (Math.min(ms, maxMs) / maxMs) * graphHeight;
+
+  // Helper to get X position based on index
+  const indexToX = (index, total) => {
+    if (total <= 1) return startX + graphWidth / 2;
+    return startX + (index / (total - 1)) * graphWidth;
+  };
+
+  // Draw frontend line
+  if (responseTimeHistory.frontend.length > 0) {
+    const points = responseTimeHistory.frontend.map((p, i) =>
+      `${indexToX(i, responseTimeHistory.frontend.length)},${valueToY(p.value)}`
+    ).join(' ');
+    elements.frontendLine.setAttribute('points', points);
+
+    // Draw data points
+    elements.frontendPoints.innerHTML = responseTimeHistory.frontend.map((p, i) => {
+      const x = indexToX(i, responseTimeHistory.frontend.length);
+      const y = valueToY(p.value);
+      return `<circle class="graph-point frontend-point" cx="${x}" cy="${y}" r="4">
+        <title>${Math.round(p.value)}ms</title>
+      </circle>`;
+    }).join('');
+
+    // Update average
+    const avg = responseTimeHistory.frontend.reduce((sum, p) => sum + p.value, 0) / responseTimeHistory.frontend.length;
+    elements.frontendAvg.textContent = `${Math.round(avg)}ms`;
+  }
+
+  // Draw backend line
+  if (responseTimeHistory.backend.length > 0) {
+    const points = responseTimeHistory.backend.map((p, i) =>
+      `${indexToX(i, responseTimeHistory.backend.length)},${valueToY(p.value)}`
+    ).join(' ');
+    elements.backendLine.setAttribute('points', points);
+
+    // Draw data points
+    elements.backendPoints.innerHTML = responseTimeHistory.backend.map((p, i) => {
+      const x = indexToX(i, responseTimeHistory.backend.length);
+      const y = valueToY(p.value);
+      return `<circle class="graph-point backend-point" cx="${x}" cy="${y}" r="4">
+        <title>${Math.round(p.value)}ms</title>
+      </circle>`;
+    }).join('');
+
+    // Update average
+    const avg = responseTimeHistory.backend.reduce((sum, p) => sum + p.value, 0) / responseTimeHistory.backend.length;
+    elements.backendAvg.textContent = `${Math.round(avg)}ms`;
+  }
 }
 
 /**

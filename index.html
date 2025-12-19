@@ -32,149 +32,182 @@
         <span class="brand-name">Rentverse Status</span>
       </a>
 
-      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-          stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-          stroke-width="2" style="display: none;">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-        </svg>
-      </button>
-    </header>
-
-    <!-- Status Hero -->
-    <section class="status-hero">
-      <div class="status-indicator">
-        <span class="status-dot" id="statusDot"></span>
-        <h1 class="status-title" id="statusTitle">Checking systems...</h1>
-      </div>
-      <p class="status-subtitle" id="statusSubtitle">Fetching latest status</p>
-    </section>
-
-    <!-- Toolbar -->
-    <div class="toolbar">
-      <div class="toolbar-left">
+      <div class="header-right">
         <span class="timestamp" id="lastChecked">--</span>
         <span class="live-indicator">
           <span class="live-dot"></span>
           Live
         </span>
+        <button class="refresh-btn" id="refreshBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor" stroke-width="2" style="display: none;">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+        </button>
       </div>
-      <button class="refresh-btn" id="refreshBtn">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
-        Refresh
-      </button>
-    </div>
+    </header>
 
-    <!-- Current Status -->
-    <section class="section">
-      <h2 class="section-title">Current Status</h2>
-      <div class="service-list">
-        <!-- Frontend -->
-        <div class="service-row" id="frontendRow">
-          <div class="service-info">
-            <div class="service-icon frontend">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M24 22.525H0l12-21.05 12 21.05z" />
-              </svg>
+    <!-- Main Content Grid -->
+    <main class="main-grid">
+      <!-- Left Column: Status -->
+      <div class="status-column">
+        <!-- Status Hero -->
+        <section class="status-hero">
+          <div class="status-indicator">
+            <span class="status-dot" id="statusDot"></span>
+            <h1 class="status-title" id="statusTitle">Checking systems...</h1>
+          </div>
+          <p class="status-subtitle" id="statusSubtitle">Fetching latest status</p>
+        </section>
+
+        <!-- Service List -->
+        <div class="service-list">
+          <!-- Frontend -->
+          <div class="service-row" id="frontendRow">
+            <div class="service-info">
+              <div class="service-icon frontend">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M24 22.525H0l12-21.05 12 21.05z" />
+                </svg>
+              </div>
+              <div>
+                <div class="service-name">Frontend</div>
+                <div class="service-url">rentverse-frontend-nine.vercel.app</div>
+              </div>
             </div>
-            <div>
-              <div class="service-name">Frontend</div>
-              <div class="service-url">rentverse-frontend-nine.vercel.app</div>
+            <div class="service-meta">
+              <span class="response-time" id="frontendTime">--</span>
+              <span class="status-badge checking" id="frontendBadge">Checking</span>
             </div>
           </div>
-          <div class="service-meta">
-            <span class="response-time" id="frontendTime">--</span>
-            <span class="status-badge checking" id="frontendBadge">Checking</span>
+
+          <!-- Backend -->
+          <div class="service-row" id="backendRow">
+            <div class="service-info">
+              <div class="service-icon backend">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+                </svg>
+              </div>
+              <div>
+                <div class="service-name">Backend API</div>
+                <div class="service-url">rentverse-backend.onrender.com</div>
+              </div>
+            </div>
+            <div class="service-meta">
+              <span class="response-time" id="backendTime">--</span>
+              <span class="status-badge checking" id="backendBadge">Checking</span>
+            </div>
+          </div>
+
+          <!-- Database -->
+          <div class="service-row" id="databaseRow">
+            <div class="service-info">
+              <div class="service-icon database">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M12 3C7.58 3 4 4.79 4 7v10c0 2.21 3.58 4 8 4s8-1.79 8-4V7c0-2.21-3.58-4-8-4zm6 14c0 .5-2.13 2-6 2s-6-1.5-6-2v-2.23c1.61.78 3.72 1.23 6 1.23s4.39-.45 6-1.23V17zm0-5c0 .5-2.13 2-6 2s-6-1.5-6-2V9.77c1.61.78 3.72 1.23 6 1.23s4.39-.45 6-1.23V12z" />
+                </svg>
+              </div>
+              <div>
+                <div class="service-name">Database</div>
+                <div class="service-url">Neon PostgreSQL</div>
+              </div>
+            </div>
+            <div class="service-meta">
+              <span class="response-time" id="databaseTime">--</span>
+              <span class="status-badge checking" id="databaseBadge">Checking</span>
+            </div>
           </div>
         </div>
 
-        <!-- Backend -->
-        <div class="service-row" id="backendRow">
-          <div class="service-info">
-            <div class="service-icon backend">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path
-                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
-              </svg>
-            </div>
-            <div>
-              <div class="service-name">Backend API</div>
-              <div class="service-url">rentverse-backend.onrender.com</div>
-            </div>
+        <!-- Uptime Summary -->
+        <div class="uptime-summary">
+          <div class="uptime-item">
+            <span class="uptime-service">Frontend</span>
+            <div class="uptime-bar-mini" id="frontendUptime"></div>
+            <span class="uptime-percent" id="frontendPercent">--</span>
           </div>
-          <div class="service-meta">
-            <span class="response-time" id="backendTime">--</span>
-            <span class="status-badge checking" id="backendBadge">Checking</span>
+          <div class="uptime-item">
+            <span class="uptime-service">Backend</span>
+            <div class="uptime-bar-mini" id="backendUptime"></div>
+            <span class="uptime-percent" id="backendPercent">--</span>
           </div>
-        </div>
-
-        <!-- Database -->
-        <div class="service-row" id="databaseRow">
-          <div class="service-info">
-            <div class="service-icon database">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path
-                  d="M12 3C7.58 3 4 4.79 4 7v10c0 2.21 3.58 4 8 4s8-1.79 8-4V7c0-2.21-3.58-4-8-4zm6 14c0 .5-2.13 2-6 2s-6-1.5-6-2v-2.23c1.61.78 3.72 1.23 6 1.23s4.39-.45 6-1.23V17zm0-5c0 .5-2.13 2-6 2s-6-1.5-6-2V9.77c1.61.78 3.72 1.23 6 1.23s4.39-.45 6-1.23V12z" />
-              </svg>
-            </div>
-            <div>
-              <div class="service-name">Database</div>
-              <div class="service-url">Supabase PostgreSQL</div>
-            </div>
-          </div>
-          <div class="service-meta">
-            <span class="response-time" id="databaseTime">--</span>
-            <span class="status-badge checking" id="databaseBadge">Checking</span>
+          <div class="uptime-item">
+            <span class="uptime-service">Database</span>
+            <div class="uptime-bar-mini" id="databaseUptime"></div>
+            <span class="uptime-percent" id="databasePercent">--</span>
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- Uptime Section -->
-    <section class="uptime-section">
-      <div class="uptime-header">
-        <h2 class="uptime-title">Uptime · Last 30 Days</h2>
-        <span class="uptime-period" id="uptimePeriod"></span>
-      </div>
-
-      <div class="uptime-row">
-        <span class="uptime-label">Frontend</span>
-        <div class="uptime-bar" id="frontendUptime">
-          <!-- Generated by JS -->
+      <!-- Right Column: Graph -->
+      <div class="graph-column">
+        <div class="response-graph-header">
+          <h2 class="section-title">Response Time · Last Hour</h2>
+          <div class="response-graph-legend">
+            <span class="legend-item frontend-legend"><span class="legend-dot"></span> Frontend</span>
+            <span class="legend-item backend-legend"><span class="legend-dot"></span> Backend</span>
+          </div>
         </div>
-        <span class="uptime-percent" id="frontendPercent">--</span>
-      </div>
-
-      <div class="uptime-row">
-        <span class="uptime-label">Backend API</span>
-        <div class="uptime-bar" id="backendUptime">
-          <!-- Generated by JS -->
+        <div class="response-graph-container">
+          <svg class="response-graph" id="responseGraph" viewBox="0 0 600 200" preserveAspectRatio="xMidYMid meet">
+            <!-- Y-axis labels -->
+            <text class="graph-label" x="5" y="20">500ms</text>
+            <text class="graph-label" x="5" y="100">250ms</text>
+            <text class="graph-label" x="5" y="180">0ms</text>
+            <!-- Grid lines -->
+            <line class="graph-grid" x1="50" y1="20" x2="580" y2="20" />
+            <line class="graph-grid" x1="50" y1="100" x2="580" y2="100" />
+            <line class="graph-grid" x1="50" y1="180" x2="580" y2="180" />
+            <!-- Line paths will be drawn by JS -->
+            <polyline class="response-line frontend-line" id="frontendLine" points="" />
+            <polyline class="response-line backend-line" id="backendLine" points="" />
+            <!-- Data points will be drawn by JS -->
+            <g id="frontendPoints"></g>
+            <g id="backendPoints"></g>
+          </svg>
+          <div class="graph-time-labels">
+            <span>-60m</span>
+            <span>-45m</span>
+            <span>-30m</span>
+            <span>-15m</span>
+            <span>Now</span>
+          </div>
         </div>
-        <span class="uptime-percent" id="backendPercent">--</span>
-      </div>
-
-      <div class="uptime-row">
-        <span class="uptime-label">Database</span>
-        <div class="uptime-bar" id="databaseUptime">
-          <!-- Generated by JS -->
+        <div class="response-graph-stats">
+          <div class="stat-card">
+            <span class="stat-label">Frontend Avg</span>
+            <span class="stat-value" id="frontendAvg">--</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Backend Avg</span>
+            <span class="stat-value" id="backendAvg">--</span>
+          </div>
         </div>
-        <span class="uptime-percent" id="databasePercent">--</span>
       </div>
-    </section>
+    </main>
 
     <!-- Footer -->
     <footer class="footer">
       <p class="footer-text">
         Powered by <a href="https://rentverse-frontend-nine.vercel.app" target="_blank" rel="noopener"
           class="footer-link">ClaRity</a>
+        <span id="uptimePeriod" class="uptime-period-text"></span>
       </p>
     </footer>
   </div>
