@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rentverse Status</title>
+  <meta name="description" content="Real-time status and uptime monitoring for Rentverse services.">
+
+  <!-- Favicon -->
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="page">
+    <!-- Header -->
+    <header class="header">
+      <a href="#" class="brand">
+        <svg class="brand-logo" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="8" fill="currentColor" />
+          <path d="M16 8L8 14V24H13V18H19V24H24V14L16 8Z" fill="white" />
+        </svg>
+        <span class="brand-name">Rentverse Status</span>
+      </a>
+
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          stroke-width="2" style="display: none;">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
+      </button>
+    </header>
+
+    <!-- Status Hero -->
+    <section class="status-hero">
+      <div class="status-indicator">
+        <span class="status-dot" id="statusDot"></span>
+        <h1 class="status-title" id="statusTitle">Checking systems...</h1>
+      </div>
+      <p class="status-subtitle" id="statusSubtitle">Fetching latest status</p>
+    </section>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <span class="timestamp" id="lastChecked">--</span>
+        <span class="live-indicator">
+          <span class="live-dot"></span>
+          Live
+        </span>
+      </div>
+      <button class="refresh-btn" id="refreshBtn">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Refresh
+      </button>
+    </div>
+
+    <!-- Current Status -->
+    <section class="section">
+      <h2 class="section-title">Current Status</h2>
+      <div class="service-list">
+        <!-- Frontend -->
+        <div class="service-row" id="frontendRow">
+          <div class="service-info">
+            <div class="service-icon frontend">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M24 22.525H0l12-21.05 12 21.05z" />
+              </svg>
+            </div>
+            <div>
+              <div class="service-name">Frontend</div>
+              <div class="service-url">rentverse-frontend-nine.vercel.app</div>
+            </div>
+          </div>
+          <div class="service-meta">
+            <span class="response-time" id="frontendTime">--</span>
+            <span class="status-badge checking" id="frontendBadge">Checking</span>
+          </div>
+        </div>
+
+        <!-- Backend -->
+        <div class="service-row" id="backendRow">
+          <div class="service-info">
+            <div class="service-icon backend">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+              </svg>
+            </div>
+            <div>
+              <div class="service-name">Backend API</div>
+              <div class="service-url">rentverse-backend.onrender.com</div>
+            </div>
+          </div>
+          <div class="service-meta">
+            <span class="response-time" id="backendTime">--</span>
+            <span class="status-badge checking" id="backendBadge">Checking</span>
+          </div>
+        </div>
+
+        <!-- Database -->
+        <div class="service-row" id="databaseRow">
+          <div class="service-info">
+            <div class="service-icon database">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 3C7.58 3 4 4.79 4 7v10c0 2.21 3.58 4 8 4s8-1.79 8-4V7c0-2.21-3.58-4-8-4zm6 14c0 .5-2.13 2-6 2s-6-1.5-6-2v-2.23c1.61.78 3.72 1.23 6 1.23s4.39-.45 6-1.23V17zm0-5c0 .5-2.13 2-6 2s-6-1.5-6-2V9.77c1.61.78 3.72 1.23 6 1.23s4.39-.45 6-1.23V12z" />
+              </svg>
+            </div>
+            <div>
+              <div class="service-name">Database</div>
+              <div class="service-url">Supabase PostgreSQL</div>
+            </div>
+          </div>
+          <div class="service-meta">
+            <span class="response-time" id="databaseTime">--</span>
+            <span class="status-badge checking" id="databaseBadge">Checking</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Uptime Section -->
+    <section class="uptime-section">
+      <div class="uptime-header">
+        <h2 class="uptime-title">Uptime · Last 30 Days</h2>
+        <span class="uptime-period" id="uptimePeriod"></span>
+      </div>
+
+      <div class="uptime-row">
+        <span class="uptime-label">Frontend</span>
+        <div class="uptime-bar" id="frontendUptime">
+          <!-- Generated by JS -->
+        </div>
+        <span class="uptime-percent" id="frontendPercent">--</span>
+      </div>
+
+      <div class="uptime-row">
+        <span class="uptime-label">Backend API</span>
+        <div class="uptime-bar" id="backendUptime">
+          <!-- Generated by JS -->
+        </div>
+        <span class="uptime-percent" id="backendPercent">--</span>
+      </div>
+
+      <div class="uptime-row">
+        <span class="uptime-label">Database</span>
+        <div class="uptime-bar" id="databaseUptime">
+          <!-- Generated by JS -->
+        </div>
+        <span class="uptime-percent" id="databasePercent">--</span>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p class="footer-text">
+        Powered by <a href="https://rentverse-frontend-nine.vercel.app" target="_blank" rel="noopener"
+          class="footer-link">ClaRity</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="checker.js"></script>
+</body>
+
+</html>

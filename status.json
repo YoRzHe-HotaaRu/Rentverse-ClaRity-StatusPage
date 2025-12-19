@@ -1,0 +1,23 @@
+{
+  "lastUpdated": null,
+  "services": {
+    "frontend": {
+      "name": "Frontend",
+      "status": "checking",
+      "url": "https://rentverse-frontend-nine.vercel.app",
+      "responseTime": null
+    },
+    "backend": {
+      "name": "Backend API",
+      "status": "checking",
+      "url": "https://rentverse-backend.onrender.com",
+      "responseTime": null
+    },
+    "database": {
+      "name": "Database",
+      "status": "checking",
+      "url": null,
+      "responseTime": null
+    }
+  }
+}
